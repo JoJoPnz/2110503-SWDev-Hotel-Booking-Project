@@ -12,6 +12,7 @@ connectDB();
 
 //Route files
 const auth = require("./routes/auth");
+const hotels = require("./routes/hotel")
 
 const app = express();
 app.use(cors());
@@ -24,6 +25,7 @@ app.use(cookieParser());
 
 //Mount routers
 app.use("/api/v1/auth", auth);
+app.use("/api/v1/hotels",hotels);
 
 const PORT = process.env.PORT || 5000;
 const server = app.listen(
