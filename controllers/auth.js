@@ -79,11 +79,10 @@ const sendTokenResponse = (user, statusCode, res) => {
     .status(statusCode) /*.cookie("token", token, options)*/
     .json({
       success: true,
-      // add for front end
       _id: user._id,
       name: user.name,
+      telNo: user.telNo,
       email: user.email,
-      // end for front end
       token,
     });
 };
