@@ -62,7 +62,6 @@ exports.validateBookingPeriod = (hotel, checkInDate, checkOutDate, req) => {
       return unAvailableDate; // Stop the loop and return the overlapping date
     }
   });
-  console.log(overlappingDate);
   if (overlappingDate) {
     return {
       error: true,
