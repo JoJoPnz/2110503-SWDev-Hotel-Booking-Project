@@ -1,4 +1,14 @@
+const Hotel = require("../models/Hotel");
 const Booking = require("../models/Booking");
+const {
+  sendEmail,
+  convertDateToString,
+  validateBookingPeriod,
+} = require("../services/bookings");
+const dotenv = require("dotenv");
+
+//Load env vars
+dotenv.config({ path: "../config/config.env" });
 
 //@desc     Get single booking
 //@route    GET /api/v1/bookings/:id
@@ -69,5 +79,65 @@ exports.getBookings = async (req, res, next) => {
     return res
       .status(500)
       .json({ success: false, message: "Cannot find Bookings" });
+  }
+};
+
+//@desc     Add booking
+//@route    POST /api/v1/bookings
+//@access   Private
+exports.addBooking = async (req, res, next) => {
+  try {
+    const hotel = await Hotel.findById(req.body.hotel);
+
+    // If hotel not found, return 404
+    if (!hotel) {
+      return res.status(404).json({
+        success: false,
+        message: `No hotel with the id of ${req.body.hotel}`,
+      });
+    }
+
+    // Add user Id to req.body
+    req.body.user = req.user.id;
+
+    // Get check in, check out date from body
+    const checkInDate = new Date(req.body.checkInDate);
+    const checkOutDate = new Date(req.body.checkOutDate);
+
+    // Validate booking period
+    const validateResult = validateBookingPeriod(
+      hotel,
+      checkInDate,
+      checkOutDate,
+      req
+    );
+    if (validateResult.error) {
+      return res
+        .status(validateResult.status)
+        .json({ success: false, message: validateResult.message });
+    }
+
+    // Create booking
+    const booking = await Booking.create(req.body);
+
+    // Send Email
+    const hotelEmail = hotel.email;
+    const subject = "New Booking Notification";
+    const text = `User information:
+    \nName: ${req.user.name}
+    \nTel: ${req.user.TelNo}
+    \nEmail: ${req.user.email}
+    \n\nBooking information:
+    \nCheck in date: ${convertDateToString(checkInDate)}
+    \nCheck out date: ${convertDateToString(checkOutDate)}`;
+    sendEmail(hotelEmail, subject, text);
+
+    // No error, return success 200
+    return res.status(200).json({ success: true, data: booking });
+  } catch (err) {
+    console.log(err.stack);
+    return res
+      .status(500)
+      .json({ success: false, message: "Cannot create Booking" });
   }
 };
