@@ -1,5 +1,14 @@
 const Hotel = require("../models/Hotel");
 const Booking = require("../models/Booking");
+const {
+  sendEmail,
+  convertDateToString,
+  validateBookingPeriod,
+} = require("../services/bookings");
+const dotenv = require("dotenv");
+
+//Load env vars
+dotenv.config({ path: "../config/config.env" });
 
 //@desc     Get single booking
 //@route    GET /api/v1/bookings/:id
@@ -95,52 +104,36 @@ exports.addBooking = async (req, res, next) => {
     const checkInDate = new Date(req.body.checkInDate);
     const checkOutDate = new Date(req.body.checkOutDate);
 
-    // Check check in must be less than check out date
-    if (checkInDate.getTime() >= checkOutDate.getTime()) {
-      return res.status(400).json({
-        success: false,
-        message: "Check in date must begin before check out date",
-      });
-    }
-
-    // Check unavailable dates
-    hotel.unAvailableDates.map((unAvailableDate) => {
-      unAvailableDate = new Date(unAvailableDate);
-      unAvailableDate.setUTCHours(0, 0, 0, 0);
-      if (
-        checkInDate.getTime() <= unAvailableDate.getTime() &&
-        unAvailableDate.getTime() <= checkOutDate.getTime()
-      ) {
-        return res.status(400).json({
-          success: false,
-          message: `Your booking range overlap with hotel's unavailable dates: ${unAvailableDate.toLocaleDateString(
-            "en-US",
-            { weekday: "long", year: "numeric", month: "long", day: "numeric" }
-          )}`,
-        });
-      }
-    });
-
-    // If the user is not an admin, they can't book more than 3 nights.
-    const upperBoundCheckOutDate = new Date(req.body.checkInDate);
-    upperBoundCheckOutDate.setDate(checkInDate.getDate() + 3);
-    upperBoundCheckOutDate.setUTCHours(23, 59, 59, 999);
-    if (
-      req.user.role !== "admin" &&
-      checkOutDate.getTime() > upperBoundCheckOutDate.getTime()
-    ) {
-      return res.status(400).json({
-        success: false,
-        message: `User can't book more than 3 nights`,
-      });
+    // Validate booking period
+    const validateResult = validateBookingPeriod(
+      hotel,
+      checkInDate,
+      checkOutDate,
+      req
+    );
+    if (validateResult.error) {
+      return res
+        .status(validateResult.status)
+        .json({ success: false, message: validateResult.message });
     }
 
     // Create booking
     const booking = await Booking.create(req.body);
 
     // Send Email
+    const hotelEmail = hotel.email;
+    const subject = "New Booking Notification";
+    const text = `User information:
+    \nName: ${req.user.name}
+    \nTel: ${req.user.TelNo}
+    \nEmail: ${req.user.email}
+    \n\nBooking information:
+    \nCheck in date: ${convertDateToString(checkInDate)}
+    \nCheck out date: ${convertDateToString(checkOutDate)}`;
+    sendEmail(hotelEmail, subject, text);
 
-    res.status(200).json({ success: true, data: booking });
+    // No error, return success 200
+    return res.status(200).json({ success: true, data: booking });
   } catch (err) {
     console.log(err.stack);
     return res
