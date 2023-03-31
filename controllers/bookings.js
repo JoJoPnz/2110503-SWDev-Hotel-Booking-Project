@@ -125,7 +125,7 @@ exports.addBooking = async (req, res, next) => {
     const subject = "New Booking Notification";
     const text = `User information:
     \nName: ${req.user.name}
-    \nTel: ${req.user.TelNo}
+    \nTel: ${req.user.telNo}
     \nEmail: ${req.user.email}
     \n\nBooking information:
     \nCheck in date: ${convertDateToString(checkInDate)}
