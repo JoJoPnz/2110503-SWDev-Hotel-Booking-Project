@@ -75,16 +75,14 @@ const sendTokenResponse = (user, statusCode, res) => {
     options.secure = true;
   }
 
-  res
-    .status(statusCode) /*.cookie("token", token, options)*/
-    .json({
-      success: true,
-      _id: user._id,
-      name: user.name,
-      telNo: user.telNo,
-      email: user.email,
-      token,
-    });
+  res.status(statusCode).cookie("token", token, options).json({
+    success: true,
+    _id: user._id,
+    name: user.name,
+    telNo: user.telNo,
+    email: user.email,
+    token,
+  });
 };
 
 //@desc     Get current Logged in user
@@ -93,4 +91,16 @@ const sendTokenResponse = (user, statusCode, res) => {
 exports.getMe = async (req, res, next) => {
   const user = await User.findById(req.user.id);
   res.status(200).json({ success: true, data: user });
+};
+
+//@desc     Log user out / clear cookie
+//@route    GET /api/v1/auth/logout
+//@access   Private
+exports.logout = async (req, res, next) => {
+  res.cookie("token", "none", {
+    expires: new Date(Date.now() + 10 * 1000),
+    httpOnly: true,
+  });
+
+  res.status(200).json({ success: true, data: {} });
 };
