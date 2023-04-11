@@ -26,7 +26,7 @@ const HotelSchema = new mongoose.Schema(
       ],
     },
     unAvailableDates:{
-      type: [String],
+      type: [Date],
     }
   },
   {

@@ -77,3 +77,27 @@ exports.deleteHotel = async (req, res, next) => {
     res.status(400).json({ success: false });
   }
 };
+
+//@desc     Get available hotel
+//@route    GET /api/v1/hotels/availableHotel
+//@access   Private
+exports.getAvailableHotel = async (req, res, next) => {
+  try {
+    const hotels = await Hotel.find({
+      unAvailableDates: {
+        $not: {
+          $elemMatch: {
+            $gte: new Date(req.query.checkInDate),
+            $lte: new Date(req.query.checkOutDate),
+          },
+        },
+      },
+    });
+
+    res.status(200).json({ success: true, count: hotels.length, data: hotels });
+
+  } catch (err) {
+    console.log(err);
+    res.status(400).json({ success: false });
+  }
+};
