@@ -3,7 +3,7 @@ const {
   getBookings,
   getBooking,
   addBooking,
-  // updateAppointment,
+  updateBooking,
   // deleteAppointment,
 } = require("../controllers/bookings");
 
@@ -15,8 +15,10 @@ router
   .route("/")
   .get(protect, getBookings)
   .post(protect, authorize("admin", "user"), addBooking);
-router.route("/:id").get(protect, getBooking);
-//   .put(protect, authorize("admin", "user"), updateAppointment)
+router
+  .route("/:id")
+  .get(protect, getBooking)
+  .put(protect, authorize("admin", "user"), updateBooking);
 //   .delete(protect, authorize("admin", "user"), deleteAppointment);
 
 module.exports = router;
