@@ -221,3 +221,70 @@ exports.updateBooking = async (req, res, next) => {
       .json({ success: false, message: "Cannot update Appointment" });
   }
 };
+
+//@desc     Delete bookings
+//@route    DELETE /api/v1/bookings
+//@access   Private
+exports.deleteBooking = async (req, res, next) => {
+  try {
+    let booking = await Booking.findById(req.params.id);
+
+    // if there is no booking, return 404
+    if (!booking) {
+      return res.status(404).json({
+        success: false,
+        message: `No booking with the id of ${req.params.id}`,
+      });
+    }
+
+    // Make sure user is the booking owner
+    if (booking.user.toString() !== req.user.id && req.user.role !== "admin") {
+      return res.status(401).json({
+        success: false,
+        message: `User ${req.user.id} is not authorized to view this booking`,
+      });
+    }
+
+    const hotel = await Hotel.findById(
+      booking.hotel
+    );
+
+    // If hotel not found, return 404
+    if (!hotel) {
+      return res.status(404).json({
+        success: false,
+        message: `No hotel with the id of ${req.body.hotel}`,
+      });
+    }
+
+    // Get check in, check out date from req.body or booking
+    const checkInDate = new Date(
+      booking.checkInDate
+    );
+    const checkOutDate = new Date(
+      booking.checkOutDate
+    );
+
+    //Delete booking
+    await Booking.findByIdAndDelete(req.params.id);
+    
+    // Send Email
+    const hotelEmail = hotel.email;
+    const subject = "Cancel Booking Notification";
+    const text = `User information:
+    \nName: ${req.user.name}
+    \nTel: ${req.user.telNo}
+    \nEmail: ${req.user.email}
+    \n\nBooking information:
+    \nCheck in date: ${convertDateToString(checkInDate)}
+    \nCheck out date: ${convertDateToString(checkOutDate)}`;
+    sendEmail(hotelEmail, subject, text);
+
+    res.status(200).json({ success: true, data: {} });
+  } catch (err) {
+    console.log(err.stack);
+    return res
+      .status(500)
+      .json({ success: false, message: "Cannot update Appointment" });
+  }
+};

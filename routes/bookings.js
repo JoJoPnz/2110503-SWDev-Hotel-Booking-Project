@@ -4,7 +4,7 @@ const {
   getBooking,
   addBooking,
   updateBooking,
-  // deleteAppointment,
+  deleteBooking
 } = require("../controllers/bookings");
 
 const router = express.Router();
@@ -18,7 +18,7 @@ router
 router
   .route("/:id")
   .get(protect, getBooking)
-  .put(protect, authorize("admin", "user"), updateBooking);
-//   .delete(protect, authorize("admin", "user"), deleteAppointment);
+  .put(protect, authorize("admin", "user"), updateBooking)
+  .delete(protect, authorize("admin", "user"), deleteBooking)
 
 module.exports = router;

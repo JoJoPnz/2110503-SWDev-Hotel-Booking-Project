@@ -36,8 +36,8 @@ const HotelSchema = new mongoose.Schema(
 );
 
 HotelSchema.pre('remove', async function(next){
-  // console.log(`Appointment being removed from hospital ${this._id}`);
-  // await this.model('Appointment').deleteMany({hospital:this._id});
+  console.log(`Booking being removed from hotel ${this._id}`);
+  await this.model('Booking').deleteMany({hotel:this._id});
   next();
 })
 
