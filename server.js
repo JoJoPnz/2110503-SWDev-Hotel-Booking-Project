@@ -12,7 +12,7 @@ connectDB();
 
 //Route files
 const auth = require("./routes/auth");
-const hotels = require("./routes/hotel");
+const hotels = require("./routes/hotels");
 const bookings = require("./routes/bookings");
 
 const app = express();

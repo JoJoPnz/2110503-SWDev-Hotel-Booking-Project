@@ -199,7 +199,10 @@ exports.updateBooking = async (req, res, next) => {
     }
 
     //Update booking
-    booking = await Booking.findByIdAndUpdate(req.params.id, req.body,{new:true,runValidators:true});
+    booking = await Booking.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true,
+    });
 
     // Send Email
     const hotelEmail = hotel.email;
@@ -245,9 +248,7 @@ exports.deleteBooking = async (req, res, next) => {
       });
     }
 
-    const hotel = await Hotel.findById(
-      booking.hotel
-    );
+    const hotel = await Hotel.findById(booking.hotel);
 
     // If hotel not found, return 404
     if (!hotel) {
@@ -258,16 +259,12 @@ exports.deleteBooking = async (req, res, next) => {
     }
 
     // Get check in, check out date from req.body or booking
-    const checkInDate = new Date(
-      booking.checkInDate
-    );
-    const checkOutDate = new Date(
-      booking.checkOutDate
-    );
+    const checkInDate = new Date(booking.checkInDate);
+    const checkOutDate = new Date(booking.checkOutDate);
 
     //Delete booking
     await Booking.findByIdAndDelete(req.params.id);
-    
+
     // Send Email
     const hotelEmail = hotel.email;
     const subject = "Cancel Booking Notification";
