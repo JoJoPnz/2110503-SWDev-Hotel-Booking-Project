@@ -25,9 +25,9 @@ const HotelSchema = new mongoose.Schema(
         "Please add a valid email",
       ],
     },
-    unAvailableDates:{
+    unAvailableDates: {
       type: [Date],
-    }
+    },
   },
   {
     toJSON: { virtuals: true },
@@ -35,10 +35,18 @@ const HotelSchema = new mongoose.Schema(
   }
 );
 
-HotelSchema.pre('remove', async function(next){
-  console.log(`Booking being removed from hotel ${this._id}`);
-  await this.model('Booking').deleteMany({hotel:this._id});
-  next();
-})
+// Reverse populate with virtuals
+HotelSchema.virtual("bookings", {
+  ref: "Booking",
+  localField: "_id",
+  foreignField: "hotel",
+  justOne: false,
+});
+
+// HotelSchema.pre("deleteOne", async function (next) {
+//   console.log(`Booking being removed from hotel ${this._id}`);
+//   await this.model("Booking").deleteMany({ hotel: this._id });
+//   next();
+// });
 
 module.exports = mongoose.model("Hotel", HotelSchema);

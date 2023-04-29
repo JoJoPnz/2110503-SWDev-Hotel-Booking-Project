@@ -63,6 +63,7 @@ exports.validateBookingPeriod = (hotel, checkInDate, checkOutDate, req) => {
     }
   });
   if (overlappingDate) {
+    console.log(overlappingDate);
     return {
       error: true,
       status: 400,

@@ -1,4 +1,5 @@
 const Hotel = require("../models/Hotel");
+const Booking = require("../models/Booking");
 
 //@desc     Get all hotels
 //@route    GET /api/v1/hotels
@@ -71,9 +72,11 @@ exports.deleteHotel = async (req, res, next) => {
     if (!hotel) {
       return res.status(400).json({ success: false });
     }
-    hotel.deleteOne();
+    await Booking.deleteMany({ hotel: req.params.id });
+    await hotel.deleteOne();
     res.status(200).json({ success: true, data: {} });
   } catch (err) {
+    console.log(err);
     res.status(400).json({ success: false });
   }
 };
@@ -95,7 +98,6 @@ exports.getAvailableHotel = async (req, res, next) => {
     });
 
     res.status(200).json({ success: true, count: hotels.length, data: hotels });
-
   } catch (err) {
     console.log(err);
     res.status(400).json({ success: false });
