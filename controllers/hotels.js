@@ -39,7 +39,7 @@ exports.createHotel = async (req, res, next) => {
     if (err.code && err.code === 11000) {
       return res
         .status(400)
-        .json({ success: false, message: "This email has already taken" });
+        .json({ success: false, message: `This ${Object.keys(err.keyValue)[0]} has already taken` });
     }
   }
 };
